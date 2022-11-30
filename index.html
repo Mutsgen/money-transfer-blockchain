@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Money transfer</title>
+    <link rel="stylesheet" href="./interface.css" />
+    <script src="web3.min.js" ></script>
+    <script type="module" src="interface.js"  ></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="account-data"></div>
+      <div class="transfer-panel">
+        
+        <!-- <input type="text" class="reciever" placeholder="Получатель" />
+        <div class="count-block">
+          <input type="text" class="count" placeholder="Сумма" />
+          <select name="swapper" id="swapper">
+            <option value="0">Wei</option>
+            <option value="1">Ether</option>
+          </select>
+        </div>
+        <input type="text" class="codeword" placeholder="Кодовое слово" />
+        <select name="category" id="category">
+          <option value="select">Категория</option>
+        </select>
+        <select name="pattern" id="pattern" style="visibility: hidden">
+          <option value="select">Шаблон</option>
+        </select>
+        <button class="send-transfer">Отправить</button> -->
+      </div>
+    </div>
+    <!-- <div>
+      <h3>Confirm</h3>
+      <input type="text" class="password" placeholder="Пароль" />
+      <button class="confirmBtn">Confirm</button>
+
+    </div> -->
+
+    <!-- <header class="account-info">
+        <h1 class="account-address">Address: </h1>
+        <h3 class="account-role">Role: </h3>
+        <h3 class="account-balance">Balance: </h3>
+        <div class="action-buttons">
+            <button class="exit">Exit</button>
+            <button class="create-transfer">Create transfer</button>
+        </div>
+    </header>
+    <main class="main-body">
+        <nav class="nav-wrap">
+            <ul class="nav-list">
+                <li class="nav-elem">
+                    Transaction history
+                </li>
+                <li class="nav-elem">
+                    Votings
+                </li>
+            </ul>
+        </nav>
+        <div class="main-content">
+            <header class="history-header">
+                <div class="history-header-content">
+                    <p>Type: </p>
+                    <select name="type" class="history-type">
+                        <option value="all">All</option>
+                        <option value="in">Incoming</option>
+                        <option value="out">Outgoing</option>
+                    </select>
+                    <p class="done">Completed<input type="checkbox"></p>                    
+                </div>
+            </header>
+            <div class="content">
+                <ul class="content-list"></ul>
+            </div>
+        </div>
+    </main>
+
+
+
+    <div class="modal-wrap" id="modal-create-transfer">
+        <div class="modal-auth">
+            <button class="close-modal"><img src="./assets/close.svg" alt=""></button>
+            <div class="modal-auth-content">
+                <h1>Create transfer</h1>
+                <form>
+                    <div class="content-div">
+                        <p>To(address): </p>
+                        <input type="text" name="" class="authAddress authInp reciever">
+                    </div>
+                    <div class="content-div">
+                        <p>Amount money: </p>
+                        <input type="text" name="" class="authPassword authInp money">
+                    </div>
+                    <div class="content-div">
+                        <p>Codeword: </p>
+                        <input type="text" name="" class="authPassword authInp codeword">
+                    </div>
+                    <div class="content-div">
+                        <p>Category: </p>
+                        <select name="category" id="category">
+                            <option value="select">select category</option>
+                        </select>
+                    </div>
+                    <div class="content-div">
+                        <p>Pattern: </p>
+                        <select name="pattern" id="pattern"></select>
+                    </div>
+                    <div class="content-div">
+                        <p>Safe transfer </p>
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider round safe-transfer"></span>
+                        </label>
+                    </div>
+                    <div class="buttons-div">
+                        <button class="loginBtn transfer">Transfer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>  -->
+    <div class="modal-wrap" id="modal-auth">
+      <div class="modal-auth">
+        <div class="modal-auth-content">
+          <h1>Log in / Registration</h1>
+          <form>
+            <div class="content-div">
+              <p>Address:</p>
+              <input type="text" name="" class="authAddress authInp" />
+            </div>
+            <div class="content-div">
+              <p>Password:</p>
+              <input type="text" name="" class="authPassword authInp" />
+            </div>
+            <div class="content-div alert-login" style="display: none">
+              <span> Login or password is wrong, oups T.T </span>
+            </div>
+            <div class="buttons-div">
+              <button class="loginBtn login">Login</button>
+              <button class="regBtn">Register</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

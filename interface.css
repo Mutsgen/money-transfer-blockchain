@@ -1,0 +1,86 @@
+.modal-wrap {
+    position: fixed;
+    display: flex;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+
+
+.modal-auth {
+    position: relative;
+    display: flex;
+    margin: auto;
+    width: 400px;
+    height: 400px;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1%;
+}
+
+.modal-auth-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.content-div{
+    display: flex;
+    margin-bottom: 10px;
+    justify-content: space-between;
+    line-height: 0px;
+}
+
+.authInp{
+    width: 200px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid black;
+}
+
+.authInp:active, .authInp:hover, .authInp:focus {
+    outline: 0;
+    outline-offset: 0;
+}
+
+.buttons-div{
+    display: flex;
+    width: calc(100% - 60%);
+    margin: auto;
+    margin-top: 50px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loginBtn{
+    margin-bottom: 20px;
+    padding: 10px 40px;
+    font-size: 20px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    color: rgb(0, 0, 119);
+    background: rgb(175, 219, 255);
+}
+
+.regBtn{
+    color: rgb(0, 0, 119);
+    text-decoration: underline;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: none;
+}
+
+.close-modal{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}

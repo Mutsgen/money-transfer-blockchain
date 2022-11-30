@@ -1,0 +1,226 @@
+// SPDX-License-Identifier: GPL-3.0 
+
+pragma solidity ^0.8.0; 
+
+contract Storage { 
+    struct User{ 
+        bytes32 password; 
+        uint role; // 0-user, 1-admin 
+    }
+
+    struct Pattern{ 
+        uint category; 
+        string name; 
+        uint money; 
+    }
+        
+    struct Category{ 
+        uint number; 
+        string name; 
+    }
+
+    struct MoneyTransfer{ 
+        address sender; 
+        address receiver; 
+        uint amount_money; 
+        bytes32 codeword; 
+        uint codewordAttempts;
+        uint category; 
+        bool safe_transfer; // Безопасный перевод 
+        uint admin_confirm; // Если вкл безопасный перевод 0- не подтверждено 1- подтверждено 2 - отклонено
+        uint status; // 0- не завершено, 1- завершено, 2- отменено, 3- получатель ввел неправильно код слово
+        uint256 creation_timestamp; // дата создания перевода 
+        uint256 receive_timestamp; // дата получения перевода 
+    }
+
+    struct Vote{
+        address voter;
+        bool vote;
+    }
+
+    struct Voting{ 
+        address user; 
+        uint role; 
+        Vote[] votes;
+        bool status; // true - активно, false - закрыто
+    }
+
+    mapping (address => User) public users; 
+    Category[] categories; 
+    MoneyTransfer[] all_transfers; 
+    Pattern[] patterns; 
+    Voting[] votings;
+    uint adminsAmount; 
+    uint transferResponse;
+
+    constructor() { 
+        users[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = User(keccak256(abi.encodePacked("test")), 0); 
+        users[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = User(keccak256(abi.encodePacked("test1")), 0); 
+        users[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = User(keccak256(abi.encodePacked("test2")), 0); 
+        users[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB] = User(keccak256(abi.encodePacked("test3")), 0); 
+
+        users[0xaa5116E0F4a2D4c15B495D1657469dE9bDB8856F] = User(keccak256(abi.encodePacked("123")), 1); 
+        users[0xAAaFb103e3E9D91Ce118e5e2780812b3eCdaB3F4] = User(keccak256(abi.encodePacked("123")), 1); 
+
+
+        categories.push(Category(0, "Present")); 
+        patterns.push(Pattern(0, "Personal transfer", 10)); 
+        patterns.push(Pattern(0, "Personal transfer", 30)); 
+        patterns.push(Pattern(0, "Personal transfer", 50)); 
+
+        categories.push(Category(1, "House rent payment")); 
+        patterns.push(Pattern(1, "rent", 70)); 
+        patterns.push(Pattern(1, "rent", 90)); 
+
+        categories.push(Category(2, "Personal payments")); 
+        patterns.push(Pattern(2, "Debt payment", 70)); 
+
+        adminsAmount = 2;
+    }
+
+    function registration(address login, bytes32 password) public{ 
+        require(users[login].password == 0x0000000000000000000000000000000000000000000000000000000000000000, "Already rtegistered");
+        users[login].password = password;
+        users[login].role = 0;
+    }
+
+    function auth(address login, bytes32 password) public view returns(bool){
+        require(users[login].password != 0x0000000000000000000000000000000000000000000000000000000000000000, "Not registered!");
+        require(users[login].password == password, "Password doesnt match"); 
+        return true;
+    }
+
+    function createTransaction(address receiver, uint amount_money, bytes32 codeword, uint category, bool safe_transfer) public payable{ 
+        require(msg.sender != receiver, "You cant send money to yourself"); 
+        require(msg.value >= amount_money, "You dont have enough money");  
+        all_transfers.push(MoneyTransfer(msg.sender, receiver, amount_money, codeword, 3, category, safe_transfer, 0, 0, block.timestamp, 0)); 
+        // сделать отобрадение шаблона в структуре, если его использовали
+    }
+
+
+    function cancelTransaction(uint id_transaction) public{ 
+        require(msg.sender == all_transfers[id_transaction].sender, "This is not your transaction"); 
+        require(all_transfers[id_transaction].status == 0 || all_transfers[id_transaction].status == 3, "Invalid transaction"); 
+        all_transfers[id_transaction].status = 2; 
+        payable(all_transfers[id_transaction].sender).transfer(all_transfers[id_transaction].amount_money); 
+    }
+
+    function receiveTransaction(uint id_transaction, bytes32 codeword) public{ 
+        require(msg.sender == all_transfers[id_transaction].receiver, "This is not your transaction"); 
+        require(all_transfers[id_transaction].codewordAttempts > 0, "You have run out of attempts to enter a code word");
+        require(all_transfers[id_transaction].status == 0, "Invalid transaction"); 
+        all_transfers[id_transaction].codewordAttempts = all_transfers[id_transaction].codewordAttempts - 1;
+        if (all_transfers[id_transaction].codeword != codeword){ 
+            if (all_transfers[id_transaction].codewordAttempts == 0){
+                all_transfers[id_transaction].status = 3; 
+                transferResponse = 3; // attempts are over
+                payable(all_transfers[id_transaction].sender).transfer(all_transfers[id_transaction].amount_money); // автовозврат
+            }
+            else{
+                transferResponse = 2; //incorrect  
+            }
+        }
+        else{
+            if (all_transfers[id_transaction].safe_transfer == true){ 
+                require(all_transfers[id_transaction].admin_confirm == 1, "Admin dont confirmed this transaction yet"); // safe transfer
+                payable(all_transfers[id_transaction].receiver).transfer(all_transfers[id_transaction].amount_money - all_transfers[id_transaction].amount_money / 1000);
+            }
+            else{
+                payable(all_transfers[id_transaction].receiver).transfer(all_transfers[id_transaction].amount_money); 
+            }
+            all_transfers[id_transaction].status = 1; 
+            all_transfers[id_transaction].receive_timestamp = block.timestamp; 
+            transferResponse = 1; //correct
+        }
+    }
+
+    function acceptSafeTransfer(uint id) public{
+        require(users[msg.sender].role == 1, "You dont have permissions");
+        require(all_transfers[id].sender != msg.sender, "You cant accept your own transaction");
+        require(all_transfers[id].status == 0, "This transaction not active anymore");
+        require(all_transfers[id].safe_transfer == true, "Safe mode dont active on this transaction");
+        require(all_transfers[id].admin_confirm == 0, "This transaction already confirmed");
+        all_transfers[id].admin_confirm = 1;
+        
+        payable(msg.sender).transfer(all_transfers[id].amount_money / 1000); 
+    }
+
+        function cancelSafeTransfer(uint id) public{
+        require(users[msg.sender].role == 1, "You dont have permissions");
+        require(all_transfers[id].sender != msg.sender, "You cant accept your own transaction");
+        require(all_transfers[id].status == 0, "This transaction not active anymore");
+        require(all_transfers[id].safe_transfer == true, "Safe mode dont active on this transaction");
+        require(all_transfers[id].admin_confirm == 0, "This transaction already confirmed");
+        all_transfers[id].admin_confirm = 2;
+        
+        payable(msg.sender).transfer(all_transfers[id].amount_money / 1000); 
+    }
+
+    function nominate(address user, uint proposedRole) public{ // Создать голосование на изменение роли пользователя
+        require(users[msg.sender].role == 1, "You dont have permissions to do this"); 
+        require(users[user].role != proposedRole, "This user is already has this role"); 
+        require(users[user].password != 0x0000000000000000000000000000000000000000000000000000000000000000, "User not registered!");
+        Voting storage newVoting = votings.push();
+        newVoting.user = user;
+        newVoting.role = proposedRole;
+        newVoting.votes.push(Vote(msg.sender, true));
+        newVoting.status = true;
+    }
+
+    function vote(uint id, bool adminVote) public{ // Проголосовать
+        require(users[msg.sender].role == 1, "You dont have permissions to do this");
+        require(votings[id].status == true, "The voting has already ended");
+        // ??? нужна ли проверка на то что пользователя уже сделали админом в параллельном голосовании
+        votings[id].votes.push(Vote(msg.sender, adminVote));
+        if (adminVote == false){    // Если хоть 1 админ против, тогда голосование закрывается
+            votings[id].status = false;
+        }
+        else if (votings[id].votes.length == adminsAmount){ // Если все админы проголосовали за, тогда роль пользователя изменяется 
+            users[votings[id].user].role = votings[id].role;
+            votings[id].status = false;
+        }
+    } 
+
+    function addCategory(string memory name) public{
+        require(users[msg.sender].role == 1, "You dont have permissions");
+        categories.push(Category(categories.length, name));
+    }
+
+    function addPattern(uint category, string memory name, uint money) public{
+        require(users[msg.sender].role == 1, "You dont have permissions");
+        require(category < categories.length && category >= 0, "This category doesn't exists");
+        patterns.push(Pattern(category, name, money));
+    }
+
+    function showCategories() public view returns(Category [] memory){ 
+        return categories; 
+    }
+
+    function showPatterns() public view returns(Pattern [] memory){ 
+        return patterns; 
+    }
+
+    function showVotings() public view returns(Voting [] memory){
+        return votings;
+    }
+
+    function showTransactions() public view returns(MoneyTransfer [] memory){
+        return all_transfers;
+    }
+
+    function checkAttempts(uint id) public view returns(uint){
+        return all_transfers[id].codewordAttempts;
+    }
+
+    function showRole(address user) public view returns(uint){
+        return users[user].role;
+    }
+
+    function transferResponseShow() public view returns(uint){
+        return transferResponse;
+    }
+
+    function showAdminsAmount() public view returns(uint){
+        return adminsAmount;
+    }
+}
